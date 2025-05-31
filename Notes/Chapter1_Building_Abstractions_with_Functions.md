@@ -518,7 +518,7 @@ def curry2(f):
 >>> s(12)
 144
 ```
-![alt text](image.png)
+![alt text](images/image-8.png)
 ```python
 a = 1
 def f(g):
