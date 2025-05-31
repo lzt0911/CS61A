@@ -207,9 +207,6 @@ def <name>(<formal parameters>):
   * Bind the function's formal parameters to its arguments in that frame
   * Execute the body of the function in that new environment
 ### 1.3.3 Example: Calling a User-Defined Function
-![alt text](images/image-8.png)
-![alt text](images/image-9.png)
-![alt text](images/image-10.png)
 ![alt text](images/image-11.png)
 * Names are bound to values, which are distributed(分布) across many independent local frames, along with a single global frame that contains shared names. A new local frame is introduced every time a function is called, even if the same function is called twice.
 * A name evaluates to the value bound to that name in the earliest frame of the current environment in which that name is found.(先在local frame中找，找不到再去global frame中找)
@@ -266,4 +263,366 @@ def <name>(<formal parameters>):
 
 # i * i
 >>> i ** 2
+```
+## 1.4 Designing Functions
+* Each function should have exactly one job. That job should be identifiable with a short name and characterizable in a single line of text. Functions that perform multiple jobs in sequence should be divided into multiple functions.
+* Don't repeat yourself is a central tenet of software engineering.
+* Functions should be defined generally. Squaring is not in the Python Library precisely because it is a special case of the pow function, which raises numbers to arbitrary(任意) powers.
+### 1.4.1 Documentation
+* A function definition will often include documentation describing the function, called a docstring. Docstrings are conventionally triple quoted(三引号).
+* Comments in Python can be attached to the end of a line following the `#` symbol.
+```python
+>>> def pressure(v, t, n):
+        """Compute the pressure in pascals of an ideal gas.
+        
+        Applies the ideal gas law: http://en.wikipedia.org/wiki/Ideal_gas_law
+        
+        v -- volume of gas, in cubic meters
+        t -- absolute temperature in degrees kelvin
+        n -- particles of gas
+        """
+        k = 1.38e-23  # Boltzmann's constant
+        return n * k * t / v
+```
+* When you call `help` with the name of a function as an argument, you see its docstring (type `q` to quit Python help).
+```python
+>>> help(pressure)
+```
+### 1.4.2 Default Argument Values
+* In Python, we can provide default values for the arguments of a function. When calling that function, arguments with default values are optional. If they are not provided, then the default value is bound to the formal parameter name(形参) instead. 
+```python
+>>> def pressure(v, t, n=6.022e23):
+        """Compute the pressure in pascals of an ideal gas.
+
+        v -- volume of gas, in cubic meters
+        t -- absolute temperature in degrees kelvin
+        n -- particles of gas (default: one mole)
+        """
+        k = 1.38e-23  # Boltzmann's constant
+        return n * k * t / v
+
+>>> pressure(1, 273.15)
+2269.974834
+>>> pressure(1, 273.15, 3 * 6.022e23)
+6809.924502
+```
+## 1.5 Control
+### 1.5.1 Statements
+### 1.5.2   Compound Statements（复合语句）
+* A simple statement is a single line that doesn't end in a colon(冒号). A compound statement is so called because it is composed of other statements (simple and compound). Compound statements typically span multiple lines and start with a one-line header ending in a colon, which identifies the type of statement. Together, a header and an indented suite of statements is called a clause(子句). A compound statement consists of one or more clause
+```python
+<header>:
+    <statement>
+    <statement>
+    ...
+<separating header>:
+    <statement>
+    <statement>
+    ...
+```
+* We can understand the statements we have already introduced in these terms.
+	* Expressions, return statements, and assignment statements are simple statements.
+	* A def statement is a compound statement. The suite that follows the def header defines the function body.
+* 使用空格进行缩进
+### 1.5.3   Defining Functions II: Local Assignment
+![alt text](images/image-2.png)
+### 1.5.4   Conditional Statements
+* Conditional statuements
+```python
+if <expression>:
+    <suite>
+elif <expression>:
+    <suite>
+else:
+    <suite>
+```
+* Boolean contexts: Python includes several false values, including `0`, `None`, and the boolean value `False`. All other numbers are true values.
+* Boolean values: Python has two boolean values, called `True` and `False`.
+* Boolean operators
+```python
+>>> True and False
+False
+>>> True or False
+True
+>>> not False
+True
+```
+```python
+def if_(c, t, f):
+    if c:
+        return t
+    else:
+        return f
+
+from math import sqrt
+
+# real_sqrt(-16)会报错
+# 原因：函数参数在调用前被立即求值，导致即使条件不满足也会执行sqrt(x)
+def real_sqrt(x):
+    """Return the real part of the square root of x."""
+    return if_(x >= 0. sqrt(x), 0)
+```
+### 1.5.5   Iteration
+```python
+while <expression>:
+    <suite>
+```
+### 1.5.6   Testing
+* Assertions: An `assert` statement has an expression in a boolean context, followed by a quoted line of text (single or double quotes are both fine, but be consistent) that will be displayed if the expression evaluates to a false value.
+```python
+>>> assert fib(8) == 13, 'The 8th Fibonacci number should be 13'
+```
+* Doctests
+	* Python 提供了一种便捷的方法，可以直接在函数的文档字符串（docstring）中嵌入简单的测试用例。文档字符串的首行应为函数的简要描述，随后留空一行，再详细说明参数和功能。此外，文档字符串可包含调用函数的交互式示例
+	```python
+	>>> def sum_naturals(n):
+            """返回前 n 个自然数的和。
+        
+            >>> sum_naturals(10)
+            55
+            >>> sum_naturals(100)
+            5050
+            """
+            total, k = 0, 1
+            while k <= n:
+                total, k = total + k, k + 1
+            return total
+    ```
+    * 通过 `doctest` 模块可自动验证代码是否符合文档中的示例行为
+    ```python
+    >>> from doctest import testmod
+    >>> testmod()
+    # 输出：TestResults(failed=0, attempted=2)（表示 2 个测试均通过）
+    # testmod() 会自动扫描当前模块中所有函数的文档字符串，执行嵌入的测试用例。若输出 failed=0，则表明所有测试通过
+    ```
+    * 若需单独验证某个函数的文档字符串测试，可使用 `run_docstring_examples`
+    ```python
+    >>> from doctest import run_docstring_examples
+    # 第一个参数：待测试的函数（如 sum_naturals）；
+	# 第二个参数：globals() 返回当前全局变量字典，确保测试在正确的命名空间中执行；
+	# 第三个参数：True 表示启用详细模式，输出每条测试的执行结果
+	>>> run_docstring_examples(sum_naturals, globals(), True)
+	Finding tests in NoName
+	Trying:
+	    sum_naturals(10)
+	Expecting:
+	    55
+	ok
+	Trying:
+	    sum_naturals(100)
+	Expecting:
+	    5050
+	ok
+    ```
+    * 在文件中编写所有测试后，可通过命令行批量执行
+    ```shell
+    python3 -m doctest <python_source_file>
+    ```
+* `globals()` 是 Python 的内置函数，它会返回一个字典，表示当前作用域下的全局符号表（全局命名空间）。这个字典包含了当前模块中定义的所有全局变量、函数、类等对象的名称及其对应的值
+## 1.6 Higher-Order Functions
+### 1.6.1 Functions as Arguments
+![alt text](images/image-7.png)
+* How to draw an environment diagram:
+	* When a fuction is defined
+		* Create a function value: `func name(<formal parameters>) [parent = <parent>]`
+		* Its parent is the current frame 
+		* Bind `<name>`  to the function value in the current frame
+	* When a function is called
+		* Add a local frame, titled with the `<name>` of the function being called
+		* Copy the parent of the function to the local frame: `[parent=<label>]` 	
+		* Bind the `<formal parameters>` to the arguments in the local frame
+		* Execute the body of the function in the environment that starts with the local frame
+### 1.6.2 Functions as General Methods
+```python
+def improve(update, close, guess=1):
+    while not close(guess):
+        guess = update(guess)
+    return guess
+
+def golden_update(guess):
+    return 1/guess + 1
+
+def square_close_to_successor(guess):
+    return approx_eq(guess * guess,
+                     guess + 1)
+
+def approx_eq(x, y, tolerance=1e-3):
+    return abs(x - y) < tolerance
+
+phi = improve(golden_update,
+              square_close_to_successor)
+```
+### 1.6.3 Defining Functions III: Nested Definitions
+* Each user-defined function has a parent environment: the environment in which it was defined.
+* When a user-defined function is called, its local frame extends its parent environment.
+![alt text](images/image-12.png)
+* 当嵌套函数尝试修改外部函数的参数n时，需要添加`nonlocal`声明
+```python
+def make_repeater(f, n):
+    """Returns the function that computes the nth application of f.
+
+    >>> add_three = make_repeater(increment, 3)
+    >>> add_three(5)
+    8
+    >>> make_repeater(triple, 5)(1) # 3 * 3 * 3 * 3 * 3 * 1
+    243
+    >>> make_repeater(square, 2)(5) # square(square(5))
+    625
+    >>> make_repeater(square, 3)(5) # square(square(square(5)))
+    390625
+    """
+    "*** YOUR CODE HERE ***"
+    def repeater(x):
+        nonlocal n
+        if n == 0:
+            return x
+        n -= 1
+        return repeater(f(x))
+    return repeater 
+```
+### 1.6.4 Functions as Returned Values
+* Functions defined within other function bodies are bound to names in a local frame.
+![alt text](images/image-13.png)
+### 1.6.5 Example: Newton's Method
+### 1.6.6 Currying
+* Currying: Transforming a multi-argument function into a single -argument, higher-order function
+![alt text](images/image-14.png)
+![alt text](images/image-15.png)
+```python
+def curry2(f):
+	def g(x):
+		def h(y):
+			return f(x, y)
+		return h
+	return g
+
+>>> from operator import add
+>>> m = curry2(add)
+>>> add_three = m(3)
+>>> add_three(2)
+>>> 5
+
+>>> curry2 = lambda f: lambda x: lambda y: f(x, y)
+```
+### 1.6.7 Lambda expressions
+* A lambda expression evaluates to a function that has a single return expression as its body. Assignment and control statements are not allowed.
+```python
+# A function that takes x and returns f(g(x))"
+>>> def compose1(f, g):
+        return lambda x: f(g(x))
+```
+```python
+>>> s = lambda x: x * x
+>>> s
+<function <lambda> at 0xf3f490>
+>>> s(12)
+144
+```
+![alt text](image.png)
+```python
+a = 1
+def f(g):
+	a = 2
+	return lambda y: a * g(y) # 这里lambda的parent为f1, 因此a为2
+f(lambda y: a + y)(a) # 这里lambda的parent为global, 因此a为1; operator a也为1
+```
+### 1.6.8   Abstractions and First-Class Functions
+### 1.6.9   Function Decorators
+* 装饰器：用于动态修改或增强其他函数的行为，其核心思想是：
+  * 输入：接受一个函数作为参数
+  * 输出：返回一个新的函数（通常是对原函数的包装）
+```python
+# 定义装饰器trace
+# 功能：当调用被装饰的函数时，会先打印函数名和参数，再执行原函数
+# 参数：fn是被装饰的原函数
+# 返回：闭包wrapped，它包裹了原函数fn并添加了打印逻辑
+def trace(fn):
+    def wrapped(x):
+        print('-> ', fn, '(', x, ')')
+        return fn(x)  # 调用原函数并返回结果
+    return wrapped  # 返回包装后的函数
+
+# 应用装饰器
+@trace
+def triple(x):
+    return 3 * x
+
+# 等价代码
+def triple(x):
+    return 3 * x
+triple = trace(triple)  # 手动应用装饰器
+
+# 调用被装饰的函数
+triple(12)
+# 输出：
+# ->  <function triple at 0x102a39848> ( 12 )
+# 36
+```
+```python
+# 装饰器本质
+def original_function(...): ...
+original_function = decorator(original_function)
+```
+```python
+# *args，它表示传递给函数的所有参数
+>>> def printed(f):
+        def print_and_return(*args):
+            result = f(*args)
+            print('Result:', result)
+            return result
+        return print_and_return
+>>> printed_pow = printed(pow)
+>>> printed_pow(2, 8)
+Result: 256
+256
+>>> printed_abs = printed(abs)
+>>> printed_abs(-10)
+Result: 10
+10
+```
+* Error & Tracebacks
+	* syntax errors: Python can detect before it even starts executing the program.
+	* runtime errors: These are errors that are detected by the Python interpreter while the program is executing.
+	* logical or behavior error
+* If `and` and `or` do not short-circuit, they just return the last value; another way to remember this is that `and` and `or` always return the last thing they evaluate, whether they short circuit or not.
+```python
+>>> True and 13
+______13
+>>> False or 0
+______0
+>>> not 10
+______False
+>>> not None
+______True
+>>> True and 1 / 0
+______Error (ZeroDivisionError)
+>>> True or 1 / 0
+______True
+>>> -1 or 5
+______-1
+>>> (1 + 1) and 1
+______1
+>>> print(3) or ""
+______3
+''
+```
+```python
+n = 7  # 全局变量 n = 7
+
+def f(x):        # 定义函数 f（后续被覆盖）
+    n = 8        # 局部变量 n = 8（不影响全局）
+    return x + 1 # 返回 x+1
+
+def g(x):        # 定义函数 g
+    n = 9        # 局部变量 n = 9
+    def h():     # 定义内部函数 h
+        return x + 1  # h 捕获闭包变量 x
+    return h     # 返回函数 h（携带闭包变量 x）
+
+def f(f, x):     # 定义新函数 f（覆盖之前的同名函数）
+    return f(x + n)  # 调用传入的 f 函数，参数是 x + 全局 n（7）
+
+# 执行逻辑开始
+f = f(g, n)      # 调用新 f，参数是 g 和全局 n=7，返回 g(7+7)=g(14)
+g = (lambda y: y())(f)  # 调用 lambda 函数，执行 f()（即 h()）
 ```
