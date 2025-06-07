@@ -518,7 +518,7 @@ def curry2(f):
 >>> s(12)
 144
 ```
-![alt text](image.png)
+![alt text](images/image-8.png)
 ```python
 a = 1
 def f(g):
@@ -625,4 +625,63 @@ def f(f, x):     # 定义新函数 f（覆盖之前的同名函数）
 # 执行逻辑开始
 f = f(g, n)      # 调用新 f，参数是 g 和全局 n=7，返回 g(7+7)=g(14)
 g = (lambda y: y())(f)  # 调用 lambda 函数，执行 f()（即 h()）
+```
+## 1.7   Recursive Functions
+### 1.7.1 The Anatomy of Recursive Functions(递归函数剖析)
+* The def statement header is similar to other functions
+* Conditional statements check for base cases
+* Base cases are evaluated without recursive calls
+* Recursivve cases are evaluated with recursive calls
+### 1.7.2 Mutual Recursion(相互递归)
+```python
+def is_even(n):
+	if n == 0:
+		return True
+	else:
+		return is_odd(n - 1)
+def is_odd(n):
+	if n == 0:
+		return False
+	else:
+		return is_even(n - 1)
+
+result = is_even(4)
+```
+### 1.7.3 Printing in Recursive Functions
+### 1.7.4 Tree Recursion
+### 1.7.5 Example: Partitions
+```python
+def count_partitions(n, m):
+	 """Count the ways to partition n using parts up to m."""
+	 if n == 0:
+	     return 1 
+	 elif n < 0:
+	     return 0
+	 elif m == 0:
+	     return 0
+	 else:
+	     return count_partitions(n-m, m) + count_partitions(n, m-1)
+```
+```python
+# write a function that prints an inverse cascade
+# 1
+# 12
+# 123
+# 1234
+# 123
+# 12
+# 1
+
+def inverse_cascade(n):
+	grow(n)
+	print(n)
+	shrink(n)
+
+def f_then_g(f, g, n):
+	if n:
+		f(n)
+		g(n)
+
+grow = lambda n: f_then_g(grow, print, n // 10)
+shrink = lambda n: f_then_g(print, shrink, n // 10)
 ```
