@@ -18,3 +18,6 @@ python ok -v
 # test locally
 python ok --local
 ```
+
+* 未解决
+  * disc03 Q6
