@@ -179,6 +179,13 @@ True
 14
 >>> sum([[2, 3], [4]], [])
 [2, 3, 4]
+
+>>> sum([[1], [2, 3], [4]], [])
+[1, 2, 3, 4]
+>>> sum([[1]], [])
+[1]
+>>> sum([[[1]], [2]], [])
+[[1], 2]
 ```
 * `max(iterable[, key=func]) -> value` `max(a, b, c, ...[, key=func]) -> value`
 	* With a single iterable argument, return its largest item.
@@ -240,7 +247,29 @@ Read more: import this."""
 >>> curry(add)(3)(4)
 7
 ```
+```python
+>>> a = 'A'
+>>> ord(a)
+65
+>>> hex(ord(a))
+'0x41'
+
+>>> from unicodedata import name, lookup
+>>> name('A')
+'LATIN CAPITAL LETTER A'
+>>> name('a')
+'LATIN SMALL LETTER A'
+>>> lookup('LATIN CAPITAL LETTER A')
+'A'
+>>> lookup('LATIN CAPITAL LETTER A').encode()
+b'A'
+>>> lookup('BABY').encode()
+b'\xf0\x9f\x91\xb6'
+```
 ### 2.3.6 Trees
+* A tree has a root label and a list of branches
+* Each branch is a tree
+![alt text](images/image-10.png)
 ```python
 # 树的构造函数
 def tree(root_label, branches=[]):
@@ -281,6 +310,42 @@ def count_leaves(tree):
 	 else:
 	     branch_counts = [count_leaves(b) for b in branches(tree)]
 	     return sum(branch_counts)
+
+def leaves(t):
+	"""Return a list containing the leaf labels of tree."""
+	if is_leaf(t):
+		return [label(t)]
+	return sum([leaves(b) for b in branches(t)], [])
+
+def increment_leaves(t):
+	"""Return a tree like t but with leaf labels incremented."""
+	if is_leaf(t):
+		return tree(label(t) + 1)
+	else:
+		bs = [increment_leaves(b) for b in branches(t)]
+		return tree(label(t), bs)
+
+def increment(t):
+	"""Return a tree like t but with all labels incremented."""
+	return tree(label(t) + 1, [increment(b) for b in branches(t)])
+
+def print_tree(t, indent=0):
+	print(' ' * indent + str(label(t)))
+	for b in branches(t):
+		print_tree(b, indent + 1)
+
+def print_sums(t, so_far):
+	if is_leaf(t):
+		print(so_far + label(t))
+	return [print_sums(b, so_far + label(t)) for b in branches(t)]
+	
+def count_paths(t, total):
+	"""Return the number of paths from the root to any node in tree t for which the labels along the path sum to total."""
+	if total - label(t) == 0:
+		found = 1
+	else:
+		found = 0
+	return found + sum([count_paths(b, total - label(t)) for b in branches(b)])
 ```
 ### 2.3.7   Linked Lists
 ![alt text](images/image-9.png)
@@ -324,4 +389,275 @@ def count_leaves(tree):
         if i == 0:
             return first(s)
         return getitem_link_recursive(rest(s), i - 1)
+```
+## 2.4   Mutable Data
+### 2.4.1   The Object Metaphor(隐喻)
+### 2.4.2   Sequence Objects
+* `list` is mutable(可变的) object.
+* With mutable data, methods called on one name can affect another name at the same time.
+```python
+>>> chinese = ['coin', 'string', 'myriad']  # A list literal
+>>> suits = chinese                         # Two names refer to the same list
+>>> suits.pop()             # Remove and return the final element
+'myriad'
+>>> suits.remove('string')  # Remove the first element that equals the argument
+>>> suits.append('cup')              # Add an element to the end
+>>> suits.extend(['sword', 'club'])  # Add all elements of a sequence to the end
+>>> suits[2] = 'spade'  # Replace an element
+>>> suits
+['coin', 'cup', 'spade', 'club']
+>>> suits[0:2] = ['heart', 'diamond']  # Replace a slice
+>>> suits
+['heart', 'diamond', 'spade', 'club']
+>>> chinese  # This name co-refers with "suits" to the same changing list
+['heart', 'diamond', 'spade', 'club']
+ 
+>>> nest = list(suits)  # Bind "nest" to a second list with the same elements
+>>> nest[0] = suits     # Create a nested list
+>>> suits.insert(2, 'Joker')  # Insert an element at index 2, shifting the rest
+>>> nest
+[['heart', 'diamond', 'Joker', 'spade', 'club'], 'diamond', 'spade', 'club']
+>>> nest[0].pop(2)
+'Joker'
+>>> suits
+['heart', 'diamond', 'spade', 'club']
+
+# 判断两列表是否指向同一元素
+>>> suits is nest[0]
+True
+>>> suits is ['heart', 'diamond', 'spade', 'club']
+False
+# 判断两列表是否相等
+>>> suits == ['heart', 'diamond', 'spade', 'club']
+True
+```
+```python
+def f(s=[]):
+	s.append(5)
+	return len(s)
+f() # 1
+f() # 2
+f() # 3
+```
+* `tuple`, is an immutable(不变的) sequence.
+```python
+>>> 1, 2 + 3
+(1, 5)
+>>> ("the", 1, ("and", "only"))
+('the', 1, ('and', 'only'))
+>>> type( (10, 20) )
+<class 'tuple'>
+>>> ()    # 0 elements
+()
+>>> (10,) # 1 element
+(10,)
+
+>>> code = ("up", "up", "down", "down") + ("left", "right") * 2
+>>> len(code)
+8
+>>> code[3]
+'down'
+>>> code.count("down")
+2
+>>> code.index("left")
+4
+```
+```python
+>>> s = ([1, 2], 3)
+>>> s[0] = 4
+ERROR
+>>> s[0][0] = 4
+>>> s
+([4, 2], 3)
+```
+### 2.4.3   Dictionaries
+* Dictionary keys do have two restrictions:
+	* A key of a dictionary cannot be a list or a dictionary (or any mutable type)
+	* Two keys cannot be equal; There can be at most one value for a given key
+* `{<key exp>: <value exp> for <name> in <iter exp> if <filter exp>}`
+```python
+>>> numerals = {'I': 1.0, 'V': 5, 'X': 10}
+>>> numerals['X']
+10
+>>> list(numerals)
+['I', 'V', 'X']
+>>> numerals.values()
+dict_values([1, 5, 10])
+>>> list(numerals.values())
+[1, 5, 10]
+
+>>> numerals['I'] = 1
+>>> numerals['L'] = 50
+>>> numerals
+{'I': 1, 'X': 10, 'L': 50, 'V': 5}
+
+>>> sum(numerals.values())
+66
+
+>>> dict([(3, 9), (4, 16), (5, 25)])
+{3: 9, 4: 16, 5: 25}
+
+# The arguments to get are the key and the default value.
+>>> numerals.get('A', 0)
+0
+>>> numerals.get('V', 0)
+5
+>>> numerals.pop('X')
+```
+```python
+.keys()
+.values()
+.items()
+# 可以使用 in 关键字来检查字典中是否包含某个键：
+```
+### 2.4.4   Local State
+### 2.4.5   The Benefits of Non-Local Assignment
+```python
+def make_withdraw(balance):
+	def withdraw(amount):
+		nonlocal balance
+		if amount > balance:
+			return 'Insufficient funds'
+		balance = balance - amount
+		return balance
+	return withdraw
+
+wd = make_withdraw(20)
+wd2 = make_withdraw(7)
+# 修改各自的balance
+wd2(6) # balance = 1
+wd(8) # balance = 12
+```
+### 2.4.6   The Cost of Non-Local Assignment
+### 2.4.7   Implementing Lists and Dictionaries
+```python
+>>> def mutable_link():
+        """Return a functional implementation of a mutable linked list."""
+        contents = empty
+        def dispatch(message, value=None):
+            nonlocal contents
+            if message == 'len':
+                return len_link(contents)
+            elif message == 'getitem':
+                return getitem_link(contents, value)
+            elif message == 'push_first':
+                contents = link(value, contents)
+            elif message == 'pop_first':
+                f = first(contents)
+                contents = rest(contents)
+                return f
+            elif message == 'str':
+                return join_link(contents, ", ")
+        return dispatch
+
+>>> def to_mutable_link(source):
+        """Return a functional list with the same contents as source."""
+        s = mutable_link()
+        for element in reversed(source):
+            s('push_first', element)
+        return s
+
+>>> def dictionary():
+        """Return a functional implementation of a dictionary."""
+        records = []
+        def getitem(key):
+            matches = [r for r in records if r[0] == key]
+            if len(matches) == 1:
+                key, value = matches[0]
+                return value
+        def setitem(key, value):
+            nonlocal records
+            non_matches = [r for r in records if r[0] != key]
+            records = non_matches + [[key, value]]
+        def dispatch(message, key=None, value=None):
+            if message == 'getitem':
+                return getitem(key)
+            elif message == 'setitem':
+                setitem(key, value)
+        return dispatch
+```
+### 2.4.8   Dispatch Dictionaries
+### 2.4.9   Propagating Constraints(传播约束）
+* 基于约束传播的系统，用于摄氏度和华氏度之间的双向转换。核心思想是通过连接器（connectors）和约束（constraints）构建一个网络，当任一节点的值发生变化时，变化会自动传播到相关节点。
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e15a0cfaa975472c8b24fb8ce81ee334.png)
+```python
+>>> celsius = connector('Celsius')
+>>> fahrenheit = connector('Fahrenheit')
+>>> def converter(c, f):
+        """Connect c to f with constraints to convert from Celsius to Fahrenheit."""
+        u, v, w, x, y = [connector() for _ in range(5)]
+        multiplier(c, w, u)
+        multiplier(v, x, u)
+        adder(v, y, f)
+        constant(w, 9)
+        constant(x, 5)
+        constant(y, 32)
+
+>>> converter(celsius, fahrenheit)
+
+>>> celsius['set_val']('user', 25)
+Celsius = 25
+Fahrenheit = 77.0
+>>> fahrenheit['set_val']('user', 212)
+Contradiction detected: 77.0 vs 212
+>>> celsius['forget']('user')
+Celsius is forgotten
+Fahrenheit is forgotten
+>>> fahrenheit['set_val']('user', 212)
+Fahrenheit = 212
+Celsius = 100.0
+```
+* `connector['set_val'](source, value)` indicates that the `source` is requesting the connector to set its current value to `value`.
+* `connector['has_val']()` returns whether the connector already has a value.
+* `connector['val']` is the current value of the connector.
+* `connector['forget'](source)` tells the connector that the `source` is requesting it to forget its value.
+* `connector['connect'](source)` tells the connector to participate in a new constraint, the `source`.
+* `constraint['new_val']()` indicates that some connector that is connected to the constraint has a new value.
+* `constraint['forget']()` indicates that some connector that is connected to the constraint has forgotten its value.
+```python
+>>> from operator import mul, truediv
+>>> def multiplier(a, b, c):
+        """The constraint that a * b = c."""
+        return make_ternary_constraint(a, b, c, mul, truediv, truediv)
+
+>>> def constant(connector, value):
+        """The constraint that connector = value."""
+        constraint = {}
+        connector['set_val'](constraint, value)
+        return constraint
+
+>>> def connector(name=None):
+        """A connector between constraints."""
+        informant = None
+        constraints = []
+        def set_value(source, value):
+            nonlocal informant
+            val = connector['val']
+            if val is None:
+                informant, connector['val'] = source, value
+                if name is not None:
+                    print(name, '=', value)
+                inform_all_except(source, 'new_val', constraints)
+            else:
+                if val != value:
+                    print('Contradiction detected:', val, 'vs', value)
+        def forget_value(source):
+            nonlocal informant
+            if informant == source:
+                informant, connector['val'] = None, None
+                if name is not None:
+                    print(name, 'is forgotten')
+                inform_all_except(source, 'forget', constraints)
+        connector = {'val': None,
+                     'set_val': set_value,
+                     'forget': forget_value,
+                     'has_val': lambda: connector['val'] is not None,
+                     'connect': lambda source: constraints.append(source)}
+        return connector
+
+>>> def inform_all_except(source, message, constraints):
+        """Inform all constraints of the message, except source."""
+        for c in constraints:
+            if c != source:
+                c[message]()
 ```
