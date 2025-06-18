@@ -579,7 +579,7 @@ wd(8) # balance = 12
 ### 2.4.8   Dispatch Dictionaries
 ### 2.4.9   Propagating Constraints(传播约束）
 * 基于约束传播的系统，用于摄氏度和华氏度之间的双向转换。核心思想是通过连接器（connectors）和约束（constraints）构建一个网络，当任一节点的值发生变化时，变化会自动传播到相关节点。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e15a0cfaa975472c8b24fb8ce81ee334.png)
+![alt text](images/image-20.png)
 ```python
 >>> celsius = connector('Celsius')
 >>> fahrenheit = connector('Fahrenheit')
@@ -660,4 +660,853 @@ Celsius = 100.0
         for c in constraints:
             if c != source:
                 c[message]()
+```
+## 2.5   Object-Oriented Programming
+### 2.5.1   Objects and Classes
+### 2.5.2   Defining Classes
+```python
+class <name>:
+	<suite>
+```
+```python
+>>> class Account:
+        # self, is bound to the newly created Account object
+        # account_holder, is bound to the argument passed to the class when it is called to be instantiated
+        def __init__(self, account_holder):
+            self.balance = 0
+            self.holder = account_holder
+        def deposit(self, amount):
+            self.balance = self.balance + amount
+            return self.balance
+        def withdraw(self, amount):
+            if amount > self.balance:
+                return 'Insufficient funds'
+            self.balance = self.balance - amount
+
+
+>>> a = Account('Kirk')
+>>> a.balance
+0
+>>> a.holder
+'Kirk'
+# binding an object to a new name using assignment does not create a new object
+>>> c = a
+>>> c is a
+True
+
+>>> spock_account = Account('Spock')
+>>> spock_account.deposit(100)
+100
+>>> spock_account.withdraw(90)
+10
+>>> spock_account.withdraw(90)
+'Insufficient funds'
+>>> spock_account.holder
+'Spock'
+```
+### 2.5.3   Message Passing and Dot Expressions
+```python
+# The built-in function getattr also returns an attribute for an object by name.
+>>> getattr(spock_account, 'balance')
+10
+>>> hasattr(spock_account, 'deposit')
+True
+```
+* When a method is invoked on an object, that object is implicitly passed as the first argument to the method.
+```python
+>>> type(Account.deposit)
+<class 'function'>
+>>> type(spock_account.deposit)
+<class 'method'>
+
+>>> Account.deposit(spock_account, 1001)  # The deposit function takes 2 arguments
+1011
+>>> spock_account.deposit(1000)           # The deposit method takes 1 argument
+2011
+```
+### 2.5.4   Class Attributes
+* instance attributes are found before class attributes
+```python
+>>> class Account:
+        interest = 0.02            # A class attribute
+        def __init__(self, account_holder):
+            self.balance = 0
+            self.holder = account_holder
+        # Additional methods would be defined here
+
+>>> spock_account = Account('Spock')
+>>> kirk_account = Account('Kirk')
+>>> spock_account.interest
+0.02
+>>> kirk_account.interest
+0.02
+>>> Account.interest = 0.04
+>>> spock_account.interest
+0.04
+>>> kirk_account.interest
+0.04
+
+# If we assign to the named attribute interest of an account instance, we create a new instance attribute that has the same name as the existing class attribute.
+>>> kirk_account.interest = 0.08
+>>>> kirk_account.interest
+0.08
+>>> spock_account.interest
+0.04
+>>> Account.interest = 0.05  # changing the class attribute
+>>> spock_account.interest     # changes instances without like-named instance attributes
+0.05
+>>> kirk_account.interest     # but the existing instance attribute is unaffected
+0.08
+```
+### 2.5.5   Inheritance
+### 2.5.6   Using Inheritance
+```python
+>>> class CheckingAccount(Account):
+        """A bank account that charges for withdrawals."""
+        withdraw_charge = 1
+        interest = 0.01
+        def withdraw(self, amount):
+            return Account.withdraw(self, amount + self.withdraw_charge)
+
+
+>>> checking = CheckingAccount('Sam')
+>>> checking.deposit(10)
+10
+>>> checking.withdraw(5)
+4
+>>> checking.interest
+0.01
+```
+![alt text](images/image-16.png)
+### 2.5.7   Multiple Inheritance
+```python
+>>> class SavingsAccount(Account):
+        deposit_charge = 2
+        def deposit(self, amount):
+            return Account.deposit(self, amount - self.deposit_charge)
+
+>>> class AsSeenOnTVAccount(CheckingAccount, SavingsAccount):
+        def __init__(self, account_holder):
+            self.holder = account_holder
+            self.balance = 1           # A free dollar!
+
+>>> such_a_deal = AsSeenOnTVAccount("John")
+>>> such_a_deal.balance
+1
+>>> such_a_deal.deposit(20)            # $2 fee from SavingsAccount.deposit
+19
+>>> such_a_deal.withdraw(5)            # $1 fee from CheckingAccount.withdraw
+13
+>>> such_a_deal.deposit_charge
+2
+>>> such_a_deal.withdraw_charge
+1
+```
+![alt text](images/image-17.png)
+* For a simple "diamond" shape like this, Python resolves names from left to right, then upwards. In this example, Python checks for an attribute name in the following classes, in order, until an attribute with that name is found: `AsSeenOnTVAccount, CheckingAccount, SavingsAccount, Account, object`
+```python
+>>> [c.__name__ for c in AsSeenOnTVAccount.mro()]
+['AsSeenOnTVAccount', 'CheckingAccount', 'SavingsAccount', 'Account', 'object']
+```
+### 2.5.8   The Role of Objects
+## 2.6 Implementing Classes and Objects
+### 2.6.1   Instances
+```python
+>>> def make_instance(cls):
+        """Return a new object instance, which is a dispatch dictionary."""
+        def get_value(name):
+        	"""获取属性值，先在实例属性查找，找不到再去类中查找"""
+            if name in attributes:
+                return attributes[name]
+            else:
+                value = cls['get'](name)
+                return bind_method(value, instance)
+        def set_value(name, value):
+        	"""设置属性值"""
+            attributes[name] = value
+        attributes = {}
+        instance = {'get': get_value, 'set': set_value}
+        return instance
+
+>>> def bind_method(value, instance):
+        """Return a bound method if value is callable, or value otherwise."""
+        if callable(value):
+            def method(*args):
+                return value(instance, *args)
+            return method
+        else:
+            return value
+```
+### 2.6.2   Classes
+```python
+>>> def make_class(attributes, base_class=None):
+        """Return a new class, which is a dispatch dictionary."""
+        def get_value(name):
+            if name in attributes:
+                return attributes[name]
+            elif base_class is not None:
+                return base_class['get'](name)
+        def set_value(name, value):
+            attributes[name] = value
+        def new(*args):
+            return init_instance(cls, *args)
+        cls = {'get': get_value, 'set': set_value, 'new': new}
+        return cls
+
+>>> def init_instance(cls, *args):
+        """Return a new object with type cls, initialized with args."""
+        instance = make_instance(cls)
+        init = cls['get']('__init__')
+        if init:
+            init(instance, *args)
+        return instance
+```
+### 2.6.3   Using Implemented Objects
+```python
+>>> def make_account_class():
+        """Return the Account class, which has deposit and withdraw methods."""
+        interest = 0.02
+        def __init__(self, account_holder):
+            self['set']('holder', account_holder)
+            self['set']('balance', 0)
+        def deposit(self, amount):
+            """Increase the account balance by amount and return the new balance."""
+            new_balance = self['get']('balance') + amount
+            self['set']('balance', new_balance)
+            return self['get']('balance')
+        def withdraw(self, amount):
+            """Decrease the account balance by amount and return the new balance."""
+            balance = self['get']('balance')
+            if amount > balance:
+                return 'Insufficient funds'
+            self['set']('balance', balance - amount)
+            return self['get']('balance')
+        return make_class(locals())
+
+>>> Account = make_account_class()
+>>> kirk_account = Account['new']('Kirk')
+>>> kirk_account['get']('holder')
+'Kirk'
+>>> kirk_account['get']('interest')
+0.02
+>>> kirk_account['get']('deposit')(20)
+20
+>>> kirk_account['get']('withdraw')(5)
+15
+>>> kirk_account['set']('interest', 0.04)
+>>> Account['get']('interest')
+0.02
+```
+```python
+>>> def make_checking_account_class():
+        """Return the CheckingAccount class, which imposes a $1 withdrawal fee."""
+        interest = 0.01
+        withdraw_fee = 1
+        def withdraw(self, amount):
+            fee = self['get']('withdraw_fee')
+            return Account['get']('withdraw')(self, amount + fee)
+        return make_class(locals(), Account)
+
+
+>>> CheckingAccount = make_checking_account_class()
+>>> jack_acct = CheckingAccount['new']('Spock')
+>>> jack_acct['get']('interest')
+0.01
+>>> jack_acct['get']('deposit')(20)
+20
+>>> jack_acct['get']('withdraw')(5)
+14
+```
+##  2.7   Object Abstraction
+### 2.7.1   String Conversion
+* The `repr` function returns a Python expression (a string) that evaluates to an equal object. The result of calling `repr`on a value is what Python prints in an interactive session.
+* The result of calling `str` on the value of an expression is what Python prints using the `print` function.
+```python
+>>> 12e12
+12000000000000.0
+>>> print(repr(12e12))
+12000000000000.0
+>>> repr(min)
+'<built-in function min>'
+
+>>> from datetime import date
+>>> tues = date(2011, 9, 12)
+>>> repr(tues)
+'datetime.date(2011, 9, 12)'
+>>> tues.__repr__()
+'datetime.date(2011, 9, 12)'
+>>> str(tues)
+'2011-09-12'
+>>> tues.__str__()
+'2011-09-12'
+```
+```python
+>>> print('pi starts with ' + str(pi) + '...')
+pi starts with 3.141592653589793...
+
+>>> print(f'pi starts with {pi}...') 
+pi starts with 3.141592653589793...
+
+>>> print('pi starts with {0}...'.format(pi)) 
+pi starts with 3.141592653589793...
+```
+### 2.7.2   Special Methods
+```python
+>>> Account.__bool__ = lambda self: self.balance != 0
+>>> bool(Account('Jack'))
+False
+>>> if not Account('Jack'):
+        print('Jack has nothing')
+Jack has nothing
+```
+```python
+>>> len('Go Bears!')
+9
+>>> 'Go Bears!'.__len__()
+9
+>>> 'Go Bears!'[3]
+'B'
+>>> 'Go Bears!'.__getitem__(3)
+'B'
+```
+```python
+>>> class Adder(object):
+        def __init__(self, n):
+            self.n = n
+        def __call__(self, k):
+            return self.n + k
+>>> add_three_obj = Adder(3)
+>>> add_three_obj(4)
+7
+```
+```python
+class Ratio:
+	def __init__(self, n, d):
+		self.numer = n
+		self.denom = d
+	def __repr__(self):
+		return 'Ratio({0}, {1})'.format(self.numer, self.denom)
+	def __str__(self):
+		return '{0}/{1}'.format(self.numer, self.denom)
+	def __add__(self, other):
+		if isinstance(other, int):
+			n = self.numer + self.denom * other
+			d = self.denom
+		elif isinstance(other, Ratio):
+			n = self.numer * other.denom + self.denom * other.numer
+			d = self.denom * other.denom
+		elif isinstance(other, float):
+			return float(self) + other
+		g = gcd(n, d)
+		return Ratio(n//g, d//g)
+	__radd__ = __add__
+	def __float__(self):
+		return self.numer / self.denom
+
+def gcd(n, d):
+	while n != d:
+		n, d = min(n, d), abs(n - d)
+	return n
+```
+### 2.7.3   Multiple Representations
+```python
+>>> class Number:
+        def __add__(self, other):
+            return self.add(other)
+        def __mul__(self, other):
+            return self.mul(other)
+
+# The Complex class inherits from Number and describes arithmetic for complex numbers.
+# ComplexRI constructs a complex number from real and imaginary parts.
+# ComplexMA constructs a complex number from a magnitude and angle.
+>>> class Complex(Number):
+        def add(self, other):
+            return ComplexRI(self.real + other.real, self.imag + other.imag)
+        def mul(self, other):
+            magnitude = self.magnitude * other.magnitude
+            return ComplexMA(magnitude, self.angle + other.angle)
+```
+* `@property` 是一个内置的装饰器，用于将类的方法转换为“属性”，从而允许你以访问属性的方式调用方法（无需括号）
+```python
+>>> from math import atan2
+>>> class ComplexRI(Complex):
+        def __init__(self, real, imag):
+            self.real = real
+            self.imag = imag
+        @property
+        def magnitude(self):
+            return (self.real ** 2 + self.imag ** 2) ** 0.5
+        @property
+        def angle(self):
+            return atan2(self.imag, self.real)
+        def __repr__(self):
+            return 'ComplexRI({0:g}, {1:g})'.format(self.real, self.imag)
+
+>>> from math import sin, cos, pi
+>>> class ComplexMA(Complex):
+        def __init__(self, magnitude, angle):
+            self.magnitude = magnitude
+            self.angle = angle
+        @property
+        def real(self):
+            return self.magnitude * cos(self.angle)
+        @property
+        def imag(self):
+            return self.magnitude * sin(self.angle)
+        def __repr__(self):
+            return 'ComplexMA({0:g}, {1:g} * pi)'.format(self.magnitude, self.angle/pi)
+```
+### 2.7.4   Generic Functions
+```python
+>>> from fractions import gcd
+>>> class Rational(Number):
+        def __init__(self, numer, denom):
+            g = gcd(numer, denom)
+            self.numer = numer // g
+            self.denom = denom // g
+        def __repr__(self):
+            return 'Rational({0}, {1})'.format(self.numer, self.denom)
+        def add(self, other):
+            nx, dx = self.numer, self.denom
+            ny, dy = other.numer, other.denom
+            return Rational(nx * dy + ny * dx, dx * dy)
+        def mul(self, other):
+            numer = self.numer * other.numer
+            denom = self.denom * other.denom
+            return Rational(numer, denom)
+
+>>> Rational(2, 5) + Rational(1, 10)
+Rational(1, 2)
+>>> Rational(1, 4) * Rational(2, 3)
+Rational(1, 6)
+```
+```python
+>>> c = ComplexRI(1, 1)
+>>> isinstance(c, ComplexRI)
+True
+>>> isinstance(c, Complex)
+True
+>>> isinstance(c, ComplexMA)
+False
+
+>>> def is_real(c):
+        """Return whether c is a real number with no imaginary part."""
+        if isinstance(c, ComplexRI):
+            return c.imag == 0
+        elif isinstance(c, ComplexMA):
+            return c.angle % pi == 0
+>>> is_real(ComplexRI(1, 1))
+False
+>>> is_real(ComplexMA(2, pi))
+True
+```
+```python
+>>> Rational.type_tag = 'rat'
+>>> Complex.type_tag = 'com'
+>>> Rational(2, 5).type_tag == Rational(1, 2).type_tag
+True
+>>> ComplexRI(1, 1).type_tag == ComplexMA(2, pi/2).type_tag
+True
+>>> Rational(2, 5).type_tag == ComplexRI(1, 1).type_tag
+False
+```
+```python
+>>> def add_complex_and_rational(c, r):
+        return ComplexRI(c.real + r.numer/r.denom, c.imag)
+
+>>> def mul_complex_and_rational(c, r):
+        r_magnitude, r_angle = r.numer/r.denom, 0
+        if r_magnitude < 0:
+            r_magnitude, r_angle = -r_magnitude, pi
+        return ComplexMA(c.magnitude * r_magnitude, c.angle + r_angle)
+
+>>> def add_rational_and_complex(r, c):
+        return add_complex_and_rational(c, r)
+>>> def mul_rational_and_complex(r, c):
+        return mul_complex_and_rational(c, r)
+```
+```python
+>>> class Number:
+        def __add__(self, other):
+            if self.type_tag == other.type_tag:
+                return self.add(other)
+            elif (self.type_tag, other.type_tag) in self.adders:
+                return self.cross_apply(other, self.adders)
+        def __mul__(self, other):
+            if self.type_tag == other.type_tag:
+                return self.mul(other)
+            elif (self.type_tag, other.type_tag) in self.multipliers:
+                return self.cross_apply(other, self.multipliers)
+        def cross_apply(self, other, cross_fns):
+            cross_fn = cross_fns[(self.type_tag, other.type_tag)]
+            return cross_fn(self, other)
+        adders = {("com", "rat"): add_complex_and_rational,
+                  ("rat", "com"): add_rational_and_complex}
+        multipliers = {("com", "rat"): mul_complex_and_rational,
+                       ("rat", "com"): mul_rational_and_complex}
+
+>>> ComplexRI(1.5, 0) + Rational(3, 2)
+ComplexRI(3, 0)
+>>> Rational(-1, 2) * ComplexMA(4, pi/2)
+ComplexMA(2, 1.5 * pi)
+```
+```python
+>>> def rational_to_complex(r):
+        return ComplexRI(r.numer/r.denom, 0)
+
+>>> class Number:
+        def __add__(self, other):
+            x, y = self.coerce(other)
+            return x.add(y)
+        def __mul__(self, other):
+            x, y = self.coerce(other)
+            return x.mul(y)
+        def coerce(self, other):
+            if self.type_tag == other.type_tag:
+                return self, other
+            elif (self.type_tag, other.type_tag) in self.coercions:
+                return (self.coerce_to(other.type_tag), other)
+            elif (other.type_tag, self.type_tag) in self.coercions:
+                return (self, other.coerce_to(self.type_tag))
+        def coerce_to(self, other_tag):
+            coercion_fn = self.coercions[(self.type_tag, other_tag)]
+            return coercion_fn(self)
+        coercions = {('rat', 'com'): rational_to_complex}
+```
+## 2.8   Efficiency
+### 2.8.1   Measuring Efficiency
+```python
+>>> def fib(n):
+        if n == 0:
+            return 0
+        if n == 1:
+            return 1
+        return fib(n-2) + fib(n-1)
+
+>>> def count(f):
+        def counted(*args):
+            counted.call_count += 1
+            return f(*args)
+        counted.call_count = 0
+        return counted
+
+>>> fib = count(fib)
+>>> fib(19)
+4181
+>>> fib.call_count
+13529
+```
+```python
+def count_frames(f):
+    def counted(*args):
+        counted.open_count += 1  # 进入函数时增加计数
+        counted.max_count = max(counted.max_count, counted.open_count)  # 更新峰值
+        result = f(*args)        # 实际执行函数
+        counted.open_count -= 1   # 返回时减少计数
+        return result
+    
+    # 初始化计数器
+    counted.open_count = 0
+    counted.max_count = 0
+    return counted
+```
+### 2.8.2   Memoization
+```python
+>>> def memo(f):
+        cache = {}
+        def memoized(n):
+            if n not in cache:
+                cache[n] = f(n)
+            return cache[n]
+        return memoized
+
+>>> counted_fib = count(fib)
+>>> fib  = memo(counted_fib)
+>>> fib(19)
+4181
+>>> counted_fib.call_count
+20
+>>> fib(34)
+5702887
+>>> counted_fib.call_count
+35
+```
+### 2.8.3   Orders of Growth
+### 2.8.4   Example: Exponentiation
+```python
+# 递归
+>>> def exp(b, n):
+        if n == 0:
+            return 1
+        return b * exp(b, n-1)
+
+# 线性迭代
+>>> def exp_iter(b, n):
+        result = 1
+        for _ in range(n):
+            result = result * b
+        return result
+
+# 连续平方法
+>>> def square(x):
+        return x*x
+
+>>> def fast_exp(b, n):
+        if n == 0:
+            return 1
+        if n % 2 == 0:
+            return square(fast_exp(b, n//2))
+        else:
+            return b * fast_exp(b, n-1)
+```
+![alt text](images/image-18.png)
+### 2.8.5   Growth Categories
+![alt text](images/image-19.png)
+## 2.9   Recursive Objects
+### 2.9.1   Linked List Class
+```python
+>>> class Link:
+        """A linked list with a first element and the rest."""
+        empty = ()
+        def __init__(self, first, rest=empty):
+            assert rest is Link.empty or isinstance(rest, Link)
+            self.first = first
+            self.rest = rest
+        def __getitem__(self, i):
+            if i == 0:
+                return self.first
+            else:
+                return self.rest[i-1]
+        def __len__(self):
+            return 1 + len(self.rest)
+>>> s = Link(3, Link(4, Link(5)))
+>>> len(s)
+3
+>>> s[1]
+4
+
+
+>>> def link_expression(s):
+        """Return a string that would evaluate to s."""
+        if s.rest is Link.empty:
+            rest = ''
+        else:
+            rest = ', ' + link_expression(s.rest)
+        return 'Link({0}{1})'.format(s.first, rest)
+>>> link_expression(s)
+'Link(3, Link(4, Link(5)))'
+
+
+>>> Link.__repr__ = link_expression
+>>> s
+Link(3, Link(4, Link(5)))
+
+
+>>> s_first = Link(s, Link(6))
+>>> s_first
+Link(Link(3, Link(4, Link(5))), Link(6))
+>>> len(s_first)
+2
+>>> len(s_first[0])
+3
+>>> s_first[0][2]
+5
+
+
+>>> def extend_link(s, t):
+        if s is Link.empty:
+            return t
+        else:
+            return Link(s.first, extend_link(s.rest, t))
+>>> extend_link(s, s)
+Link(3, Link(4, Link(5, Link(3, Link(4, Link(5))))))
+>>> Link.__add__ = extend_link
+>>> s + s
+Link(3, Link(4, Link(5, Link(3, Link(4, Link(5))))))
+
+
+>>> def map_link(f, s):
+        if s is Link.empty:
+            return s
+        else:
+            return Link(f(s.first), map_link(f, s.rest))
+>>> map_link(square, s)
+Link(9, Link(16, Link(25)))
+
+
+>>> def filter_link(f, s):
+        if s is Link.empty:
+            return s
+        else:
+            filtered = filter_link(f, s.rest)
+            if f(s.first):
+                return Link(s.first, filtered)
+            else:
+                return filtered
+>>> odd = lambda x: x % 2 == 1
+>>> map_link(square, filter_link(odd, s))
+Link(9, Link(25))
+>>> [square(x) for x in [3, 4, 5] if odd(x)]
+[9, 25]
+
+
+>>> def join_link(s, separator):
+        if s is Link.empty:
+            return ""
+        elif s.rest is Link.empty:
+            return str(s.first)
+        else:
+            return str(s.first) + separator + join_link(s.rest, separator)
+>>> join_link(s, ", ")
+'3, 4, 5'
+```
+### 2.9.2   Tree Class
+```python
+>>> class Tree:
+        def __init__(self, label, branches=()):
+            self.label = label
+            for branch in branches:
+                assert isinstance(branch, Tree)
+            self.branches = branches
+        def __repr__(self):
+            if self.branches:
+                return 'Tree({0}, {1})'.format(self.label, repr(self.branches))
+            else:
+                return 'Tree({0})'.format(repr(self.label))
+        def is_leaf(self):
+            return not self.branches
+
+
+>>> def fib_tree(n):
+        if n == 1:
+            return Tree(0)
+        elif n == 2:
+            return Tree(1)
+        else:
+            left = fib_tree(n-2)
+            right = fib_tree(n-1)
+            return Tree(left.label + right.label, (left, right))
+>>> fib_tree(5)
+Tree(3, (Tree(1, (Tree(0), Tree(1))), Tree(2, (Tree(1), Tree(1, (Tree(0), Tree(1)))))))
+
+
+>>> def sum_labels(t):
+        """Sum the labels of a Tree instance, which may be None."""
+        return t.label + sum([sum_labels(b) for b in t.branches])
+>>> sum_labels(fib_tree(5))
+10
+```
+### 2.9.3   Sets
+```python
+# Sets are unordered collections, and so the printed ordering may differ from the element ordering in the set literal.
+>>> s = {3, 2, 1, 4, 4}
+>>> s
+{1, 2, 3, 4}
+
+>>> 3 in s
+True
+>>> len(s)
+4
+# 并集，返回去重后的所有元素
+>>> s.union({1, 5})
+{1, 2, 3, 4, 5}
+# 交集
+>>> s.intersection({6, 5, 4, 3})
+{3, 4}
+```
+```python
+# 集合作为无序序列
+>>> def empty(s):
+        return s is Link.empty
+>>> def set_contains(s, v):
+        """当且仅当集合s包含v时返回True"""
+        if empty(s):
+            return False
+        elif s.first == v:
+            return True
+        else:
+            return set_contains(s.rest, v)
+>>> s = Link(4, Link(1, Link(5)))
+>>> set_contains(s, 2)
+False
+>>> set_contains(s, 5)
+True
+
+>>> def adjoin_set(s, v):
+        """返回包含s所有元素和元素v的集合"""
+        if set_contains(s, v):
+            return s
+        else:
+            return Link(v, s)
+>>> t = adjoin_set(s, 2)
+>>> t
+Link(2, Link(4, Link(1, Link(5))))
+
+>>> def intersect_set(set1, set2):
+        """返回包含set1和set2共有元素的集合"""
+        return keep_if_link(set1, lambda v: set_contains(set2, v))
+        # 相当于 [v for v in set1 if v in set2]
+>>> intersect_set(t, apply_to_all_link(s, square))
+Link(4, Link(1))
+
+>>> def union_set(set1, set2):
+        """返回包含所有在set1或set2中元素的集合"""
+        set1_not_set2 = keep_if_link(set1, lambda v: not set_contains(set2, v))
+        return extend_link(set1_not_set2, set2)
+        # 相当于 set1独有的元素 + set2所有元素
+>>> union_set(t, s)
+Link(2, Link(4, Link(1, Link(5))))
+```
+```python
+# 集合作为有序序列
+>>> def set_contains(s, v):
+        if empty(s) or s.first > v:  # 集合为空或当前元素>目标值
+            return False
+        elif s.first == v:           # 找到目标值
+            return True
+        else:                        # 继续搜索
+            return set_contains(s.rest, v)
+>>> u = Link(1, Link(4, Link(5)))
+>>> set_contains(u, 0)  # 1>0 → 停止
+False
+>>> set_contains(u, 4)  # 找到4
+True
+
+>>> def intersect_set(set1, set2):
+        if empty(set1) or empty(set2):
+            return Link.empty
+        else:
+            e1, e2 = set1.first, set2.first
+            if e1 == e2:
+                return Link(e1, intersect_set(set1.rest, set2.rest))
+            elif e1 < e2:
+                return intersect_set(set1.rest, set2)  # 仅推进set1
+            elif e2 < e1:
+                return intersect_set(set1, set2.rest)  # 仅推进set2
+>>> intersect_set(s, s.rest)
+Link(4, Link(5))
+```
+```python
+# 集合作为二叉搜索树
+>>> def set_contains(s, v):
+        if s is None:          # 空树
+            return False
+        elif s.entry == v:     # 找到元素
+            return True
+        elif s.entry < v:      # 目标值更大 → 搜索右子树
+            return set_contains(s.right, v)
+        elif s.entry > v:      # 目标值更小 → 搜索左子树
+            return set_contains(s.left, v)
+
+>>> def adjoin_set(s, v):
+        if s is None:          # 空树 → 创建新节点
+            return Tree(v)
+        elif s.entry == v:     # 元素已存在
+            return s
+        elif s.entry < v:      # 添加到右子树
+            return Tree(s.entry, s.left, adjoin_set(s.right, v))
+        elif s.entry > v:      # 添加到左子树
+            return Tree(s.entry, adjoin_set(s.left, v), s.right)
+>>> adjoin_set(adjoin_set(adjoin_set(None, 2), 3), 1)
+Tree(2, Tree(1), Tree(3))  # 创建二叉树
 ```
