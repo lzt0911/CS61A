@@ -18,6 +18,9 @@ python ok -v
 # test locally
 python ok --local
 ```
+* 其他
+  * [Python3 库文档](https://docs.python.org/3/library/index.html)
+  * [Online Python Tutor](https://pythontutor.com/cp/composingprograms.html#mode=edit)
 
 * 未解决
   * disc03 Q6
