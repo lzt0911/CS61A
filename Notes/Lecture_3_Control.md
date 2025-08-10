@@ -63,6 +63,7 @@ True
 >>> not False
 True
 ```
+* `and` 和 `or` 总是返回它们所计算的最后一个值，无论是否发生了短路。当使用 `True` 和 `False` 以外的值时，`and` 和 `or` 并不总是返回布尔值。
 ## 迭代
 ```python
 while <expression>:
