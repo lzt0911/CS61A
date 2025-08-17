@@ -1,0 +1,115 @@
+# Lecture 12 Containers
+## Slicing切片
+```python
+>>> digits = [1, 8, 2, 8]
+>>> digits[0:2]
+[1, 8]
+>>> digits[1:]
+[8, 2, 8]
+>>> digits[::-1]
+[1, 8, 2, 8]
+>>> digits[:]
+[1, 8, 2, 8]
+```
+## Sequence Aggregation
+* `sum(iterable[, start]) -> value`
+  * Return the sum of an iterable of numbers plus the value of parameter `start`(which defaults to 0) When the iterable is empty, return start.
+```python
+>>>sum([2, 3, 4])
+9
+>>> sum([2, 3, 4], 5)
+14
+>>> sum([[2, 3], [4]], [])
+[2, 3, 4]
+```
+* `max(iterable[, key=func]) -> value` or `max(a, b, c, ...[, key=func]) -> value`
+  * With a single iterable argument, return its largest item.
+  * With two or more auguments, return the largest argument.
+* `all(iterable) -> bool`
+  * Return True if `bool(x)` is True for all values `x` in the iterable. If the iterable is empty, return True.
+```python
+>>> all([x < 5 for x in range(5)])
+True
+>>> all(range(5))
+False
+```
+## Strings
+* 字符串字面量（string literals）可以表示任意文本，使用时将内容用单引号或双引号括起来
+* 字符串中的元素是只有一个字符的字符串。Python 没有单独的字符类型，任何文本都是字符串。表示单个字符的字符串的长度为 1
+```python
+>>> 'I am string!'
+'I am string!'
+>>> "I've got an apostrophe"
+"I've got an apostrophe"
+>>> '您好'
+'您好'
+
+>>> city = 'Berkeley'
+>>> len(city)
+8
+>>> city[3]
+'k'
+
+>>> 'Berkeley' + ', CA'
+'Berkeley, CA'
+>>> 'Shabu ' * 2
+'Shabu Shabu '
+
+>>> 'here' in "Where's Waldo?"
+True
+```
+```python
+>>> 'curry = lambda f: lambda x: lambda y: f(x, y)'
+'curry = lambda f: lambda x: lambda y: f(x, y)'
+>>> exec('curry = lambda f: lambda x: lambda y: f(x, y)')
+>>> curry
+<function <lambda> at 0x1003c1bf8>
+```
+* 多行字面量（Multiline Literals）：字符串可以不限于一行。跨越多行的字符串字面量可以用三重引号括起
+```python
+>>> """The Zen of Python
+claims, Readability counts.
+Read more: import this."""
+'The Zen of Python\nclaims, "Readability counts."\nRead more: import this.'
+```
+* 通过以对象值作为参数调用 `str` 的构造函数，可以从 Python 中的任何对象创建字符串
+```python
+>>> str(2) + ' is an element of ' + str(digits)
+'2 is an element of [1, 8, 2, 8]'
+```
+## Dictionaries
+```python
+>>> numerals = {'I', 1, 'V': 5, 'X': 10}
+>>> numerals
+{'I', 1, 'V': 5, 'X': 10}
+>>> numerals['X']
+10
+>>> list(numerals)
+['I', 'V', 'X']
+>>> numerals.values()
+dict_value([1, 5, 10])
+>>> sum(numerals.values())
+16
+>>> list(numerals.values())
+[1, 5, 10]
+```
+```python
+# dictionary中key不能重复
+>>> {1: 'first', 1: 'second'}
+{1, 'second'}
+
+# dictionary的key不能是列表或字典
+```
+```
+{<key exp>: <value exp> for <name> in <iter exp> if <filter exp>}
+```
+```python
+def index(keys, values, match):
+    """
+    Return a dictionary from keys k to a list of values v for which match(k, v) is a true value
+
+    >>> index([7, 9, 11], range(30, 50), lambda k, v: v % k == 0)
+    {7: [35, 42, 49], 9: [36, 45], 11: [33, 44]}
+    """
+    return {k: [v for v in values if match(k, v)] for k in keys}
+```
