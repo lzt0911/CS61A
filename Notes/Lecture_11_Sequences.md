@@ -112,6 +112,10 @@ range(1, 10)
 Go Bears!
 Go Bears!
 Go Bears!
+
+# 构造嵌套列表
+>>> [[] for _ in range(3)]
+[[], [], []]
 ```
 ## List Comprehensions列表推导式
 ```python
