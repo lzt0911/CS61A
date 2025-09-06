@@ -78,6 +78,7 @@ Read more: import this."""
 '2 is an element of [1, 8, 2, 8]'
 ```
 ## Dictionaries
+* 字典是python的内置类型，用来存储和操作带有映射关系的数据。
 ```python
 >>> numerals = {'I', 1, 'V': 5, 'X': 10}
 >>> numerals
@@ -92,6 +93,10 @@ dict_value([1, 5, 10])
 16
 >>> list(numerals.values())
 [1, 5, 10]
+>>> numerals['L'] = 50
+>>> numerals
+{'I', 1, 'V': 5, 'X': 10, 'L': 50}
+# Python 3.7 及以上版本的字典顺序会确保为插入顺序，此行为是自 3.6 版开始的 CPython 实现细节，字典会保留插入时的顺序，对键的更新也不会影响顺序，删除后再次添加的键将被插入到末尾
 ```
 ```python
 >>> d = {2: 4, 'two': ['four'], (1, 1): 4}
@@ -134,6 +139,10 @@ False
 
 # dictionary的key不能是列表或字典
 ```
+```python
+>>> dict([(3, 9), (4, 16), (5, 25)])
+{3: 9, 4: 16, 5: 25}
+```
 ```
 {<key exp>: <value exp> for <name> in <iter exp> if <filter exp>}
 ```
@@ -146,4 +155,14 @@ def index(keys, values, match):
     {7: [35, 42, 49], 9: [36, 45], 11: [33, 44]}
     """
     return {k: [v for v in values if match(k, v)] for k in keys}
+```
+* 字典类型也有一些限制：
+  * 字典的 key 不可以是可变数据，也不能包含可变数据
+  * 一个 key 只能对应一个 value
+```python
+# get方法，它返回指定 key 在字典中对应的 value；如果该 key 在字典中不存在，则返回默认值。get 方法接收两个参数，一个 key，一个默认值。
+>>> numerals.get('A', 0)
+0
+>>> numerals.get('V', 0)
+5
 ```
