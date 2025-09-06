@@ -94,6 +94,40 @@ dict_value([1, 5, 10])
 [1, 5, 10]
 ```
 ```python
+>>> d = {2: 4, 'two': ['four'], (1, 1): 4}
+>>> d[2]
+4
+>>> d['two']
+['four']
+>>> d[(1, 1)]
+4
+
+>>> for k in d.keys():
+...     print(k)
+...
+2
+two
+(1, 1)
+>>> for v in d.values():
+...     print(v)
+...
+4
+['four']
+4
+>>> for k, v in d.items():
+...     print(k, v)
+...
+2 4
+two ['four']
+(1, 1) 4
+
+# 检查字典中是否包含某个键
+>>> 'two' in d
+True
+>>> 4 in d
+False
+```
+```python
 # dictionary中key不能重复
 >>> {1: 'first', 1: 'second'}
 {1, 'second'}
