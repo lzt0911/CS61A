@@ -77,6 +77,28 @@ Read more: import this."""
 >>> str(2) + ' is an element of ' + str(digits)
 '2 is an element of [1, 8, 2, 8]'
 ```
+```python
+>>> s = 'Hello'
+>>> s.upper()
+'HELLO'
+>>> s.lower()
+'hello'
+>>> s.swapcase()
+'hELLO'
+>>> s
+'Hello'
+```
+```python
+>>> from unicodedata import name, lookup
+>>> name('A')
+'LATIN CAPITAL LETTER A'
+>>> name('a')
+'LATIN SMALL LETTER A'
+>>> lookup('BABY').encode()
+b'\xf0\x9f\x91\xb6'
+>>> 'A'.encode()
+b'A'
+```
 ## Dictionaries
 * 字典是python的内置类型，用来存储和操作带有映射关系的数据。
 ```python
