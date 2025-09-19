@@ -54,6 +54,18 @@ No more values
 >>> next(t)
 10
 ```
+```python
+>>> r = range(6)
+>>> r_iter = iter(r)
+>>> next(r_iter)
+0
+>>> [x + 1 for x in r]
+[1, 2, 3, 4, 5, 6]
+>>> [x + 1 for x in r_iter]
+[2, 3, 4, 5, 6]
+>>> next(r_iter)
+StopIteration
+```
 ## 可迭代性
 * 任何可以产生迭代器的值都称为可迭代值（iterable value）。在 Python 中，可迭代值是任何可以传递给内置 `iter` 函数的值。
 ```python

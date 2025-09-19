@@ -47,6 +47,14 @@
 >>> pairs[1][0]
 30
 ```
+* `append(elem)`: 将`elem`追加到列表末尾，返回`None`
+* `extend(s)`: 将可迭代对象`s`中的所有元素追加到列表末尾，返回`None`
+* `insert(i, elem)`: 在索引`i`处插入`elem`。如果`i`大于或等于列表的长度，则将`elem`插入到末尾。这不会替换任何现有元素，只会添加新元素`elem`，返回`None`
+* `remove(elem)`: 移除列表中第一个出现的`elem`，返回`None`，如果`elem`不在列表中，则会报错
+* `pop(i)`: 删除并返回索引`i`处的元素
+* `pop()`: 删除并返回最后一个元素
+
+
 ## Containers
 ```python
 >>> digits = [1, 8, 2, 8]
