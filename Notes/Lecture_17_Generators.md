@@ -158,3 +158,29 @@ def partitions(n, m):
             yield p + ' + ' + str(m)
         yield from partitions(n, m - 1)
 ```
+```python
+def differences(t):
+    """Yield the differences between adjacent values from iterator t.
+
+    >>> list(differences(iter([5, 2, -100, 103])))
+    [-3, -102, 203]
+    >>> next(differences(iter([39, 100])))
+    61
+    """
+    "*** YOUR CODE HERE ***"
+    # 法一
+    pre = next(t)
+    while True:
+        try:
+            cur = next(t)
+            yield cur - pre
+            pre = cur
+        except StopIteration:
+            break
+
+    # 法二
+    last_x = next(t)
+    for x in t:
+        yield x - last_x
+        last_x = x
+```
