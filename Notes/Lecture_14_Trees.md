@@ -140,6 +140,48 @@ def increment(t):
 >>> right_binarize([1, 2, 3, 4, 5, 6, 7])
 [1, [2, [3, [4, [5, [6, 7]]]]]]
 ```
+```python
+def sprout_leaves(t, leaves):
+    """Sprout new leaves containing the labels in leaves at each leaf of
+    the original tree t and return the resulting tree.
+
+    >>> t1 = tree(1, [tree(2), tree(3)])
+    >>> print_tree(t1)
+    1
+      2
+      3
+    >>> new1 = sprout_leaves(t1, [4, 5])
+    >>> print_tree(new1)
+    1
+      2
+        4
+        5
+      3
+        4
+        5
+
+    >>> t2 = tree(1, [tree(2, [tree(3)])])
+    >>> print_tree(t2)
+    1
+      2
+        3
+    >>> new2 = sprout_leaves(t2, [6, 1, 2])
+    >>> print_tree(new2)
+    1
+      2
+        3
+          6
+          1
+          2
+    """
+    "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+        new_branches = [tree(leaf) for leaf in leaves]
+        return tree(label(t), new_branches)
+    else:
+        new_branches = [sprout_leaves(branch, leaves) for branch in branches(t)]
+        return tree(label(t), new_branches)
+```
 ## 链表
 * 链表具有递归结构：链表的其余部分也是链表或“empty”
 ```python
