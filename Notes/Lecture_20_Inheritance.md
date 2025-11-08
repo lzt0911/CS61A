@@ -65,6 +65,25 @@ class Bank:
   * 如果它命名在指定类中的属性，则返回属性值。
   * 否则，在该类的父类中查找该名称的属性。
 ![alt text](images/image-12.png)
+* 子类调用父类的构造函数
+```python
+class Parent:
+    def __init__(self, name):
+        self.name = name
+        print(f"Parent initialized with name: {self.name}")
+
+class Child(Parent):
+    def __init__(self, name, age):
+        super().__init__(name)  # 调用父类的__init__方法
+        self.age = age
+        print(f"Child initialized with age: {self.age}")
+
+# 使用示例
+child = Child("Alice", 10)
+# 输出:
+# Parent initialized with name: Alice
+# Child initialized with age: 10
+```
 ### 多继承
 ```python
 >>> class SavingsAccount(Account):
