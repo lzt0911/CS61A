@@ -161,6 +161,68 @@ Link(3, Link(4, Link(5, Link(3, Link(4, Link(5))))))
 2 + 1 + 1 + 1 + 1
 1 + 1 + 1 + 1 + 1 + 1
 ```
+```python
+def divide(n, d):
+    """返回一个链表，这个链表包含 n/d 的十进制展开的循环数字。
+
+    >>> display(divide(5, 6))
+    0.8333333333...
+    >>> display(divide(2, 7))
+    0.2857142857...
+    >>> display(divide(1, 2500))
+    0.0004000000...
+    >>> display(divide(3, 11))
+    0.2727272727...
+    >>> display(divide(3, 99))
+    0.0303030303...
+    >>> display(divide(2, 31), 50)
+    0.06451612903225806451612903225806451612903225806451...
+    """
+    assert n > 0 and n < d
+    result = Link(0)  # 小数点前的 0
+    "*** 请在此处填写你的代码 ***"
+    record = {}
+    tail = result
+    cnt = 0
+    while n != 0:
+        # 在创建新节点之前检查是否出现循环
+        if n in record:
+             # 找到循环开始的位置
+            tail.rest = record[n]
+            break
+        
+        # 记录当前余数对应的节点（下一个要创建的节点）
+        cnt += 1
+        q, r = 10 * n // d, 10 * n % d
+        tail.rest = Link(q)
+        record[n] = tail.rest
+        tail = tail.rest
+        n = r
+    
+    while cnt < 10 and n == 0:
+        tail.rest = Link(0)
+        tail = tail.rest
+        cnt += 1
+
+    return result
+
+def display(s, k=10):
+    """将无限链表 s 的前 k 位以小数形式打印出来。
+
+    >>> s = Link(0, Link(8, Link(3)))
+    >>> s.rest.rest.rest = s.rest.rest
+    >>> display(s)
+    0.8333333333...
+    """
+    assert s.first == 0, f'{s.first} 不是 0'
+    digits = f'{s.first}.'
+    s = s.rest
+    for _ in range(k):
+        assert s.first >= 0 and s.first < 10, f'{s.first} 不是一个数字'
+        digits += str(s.first)
+        s = s.rest
+    print(digits + '...')
+```
 ## Tree
 ```python
 >>> class Tree:
