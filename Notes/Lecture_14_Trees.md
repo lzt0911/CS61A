@@ -182,6 +182,28 @@ def sprout_leaves(t, leaves):
         new_branches = [sprout_leaves(branch, leaves) for branch in branches(t)]
         return tree(label(t), new_branches)
 ```
+```python
+def cumulative_mul(t):
+    """Mutates t so that each node's label becomes the product of its own
+    label and all labels in the corresponding subtree rooted at t.
+
+    >>> t = Tree(1, [Tree(3, [Tree(5)]), Tree(7)])
+    >>> cumulative_mul(t)
+    >>> t
+    Tree(105, [Tree(15, [Tree(5)]), Tree(7)])
+    >>> otherTree = Tree(2, [Tree(1, [Tree(3), Tree(4), Tree(5)]), Tree(6, [Tree(7)])])
+    >>> cumulative_mul(otherTree)
+    >>> otherTree
+    Tree(5040, [Tree(60, [Tree(3), Tree(4), Tree(5)]), Tree(42, [Tree(7)])])
+    """
+    "*** YOUR CODE HERE ***"
+    for b in t.branches:
+        cumulative_mul(b)
+    total = t.label
+    for b in t.branches:
+        total *= b.label
+    t.label = total
+```
 ## 链表
 * 链表具有递归结构：链表的其余部分也是链表或“empty”
 ```python
