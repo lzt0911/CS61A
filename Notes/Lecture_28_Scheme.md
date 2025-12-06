@@ -97,55 +97,6 @@ scm> (integer? 2.2)
 ((lambda (x y z) (+ x y (square z))) 1 2 3)
 ```
 ## 复合类型
-* `pair` 是通过内置函数 `cons` 创建的，而元素则可以通过 `car` 和 `cdr` 进行访问。
-```scheme
-> (define x (cons 1 2))
-> x
-(1 . 2)
-> (car x)
-1
-> (cdr x)
-2
-```
-```scheme
-> (cons 1
-        (cons 2
-              (cons 3
-                    (cons 4 nil))))
-; 等价于
-> (list 1 2 3 4)
-; 结果是(1 2 3 4)
-
-> (define one-through-four (list 1 2 3 4))
-> (car one-through-four)
-1
-> (cdr one-through-four)
-(2 3 4)
-> (car (cdr one-through-four))
-2
-; 在前面加一个元素10
-> (cons 10 one-through-four)
-(10 1 2 3 4)
-
-> (cons 5 one-through-four)
-（5 1 2 3 4）
-```
-```scheme
-(define (length items)
-  (if (null? items)
-      0
-      (+ 1 (length (cdr items)))))
-(define (getitem items n)
-  (if (= n 0)
-      (car items)
-      (getitem (cdr items) (- n 1))))
-
-> (define squares (list 1 4 9 16 25))
-> (length squares)
-5
-> (getitem squares 3)
-16
-```
 * The `cond` special form that behaves like `if-elif-else` statements in Python.
 ```python
 # in python
@@ -203,26 +154,16 @@ c = math.sqrt(a * a + b * b)
 # a and b are still bound down here
 ```
 ```scheme
+(let ((变量1 值1)
+      (变量2 值2)
+      ...)
+  表达式1
+  表达式2
+  ...)
 (define c (let ((a 3)
                 (b (+ 2 2)))
                (sqrt (+ (* a a) (* b b)))))
 ; a and b are not bound down here 
-```
-## 符号数据
-* 在 Scheme 中，我们通过在它们前面加上一个单引号来引用符号 a 和 b 而不是它们的值。
-```scheme
-> (define a 1)
-> (define b 2)
-
-; 等价于(list 1 2)
-> (list a b)
-(1 2)
-
-> (list 'a 'b)
-(a b)
-
-> (list 'a b)
-(a 2)
 ```
 ## 海龟图形
 ```scheme
