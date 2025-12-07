@@ -17,6 +17,8 @@ python ok
 python ok -v
 # test locally
 python ok --local
+
+python3 scheme -i f.scm
 ```
 * 其他
   * [Python3 库文档](https://docs.python.org/3/library/index.html)
