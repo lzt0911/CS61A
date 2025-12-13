@@ -136,6 +136,39 @@ s
 (define (even-subsets s)
     (filter (lambda (s) (even? (apply + s))) (nonempty-subsets s)))
 ```
+```scheme
+;;; hw08中的内容
+(define (ascending? s)
+  (if (null? s)
+      #t
+      (if (null? (cdr s))
+          #t
+          (if (> (car s) (car (cdr s)))
+              #f
+              (ascending? (cdr s))))))
+
+(define (my-filter pred s) (
+    if (null? s)
+        '()
+        (if (pred (car s))
+            (cons (car s) (my-filter pred (cdr s)))
+            (my-filter pred (cdr s))
+)))
+
+(define (interleave lst1 lst2) (
+    if (null? lst1)
+        lst2
+        (if (null? lst2)
+            lst1
+            (append (list (car lst1) (car lst2)) (interleave (cdr lst1) (cdr lst2))))
+))
+
+(define (no-repeats s) (
+    if (null? s)
+        ()
+        (cons (car s) (no-repeats (filter (lambda (x) (not (= (car s) x))) (cdr s))))
+))
+```
 ## 符号数据
 * 在 Scheme 中，我们通过在它们前面加上一个单引号来引用符号 a 和 b 而不是它们的值。
 ```scheme
