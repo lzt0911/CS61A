@@ -24,7 +24,7 @@ create table cities as
 * An ordering over the remaining rows can be declared using an `order by` clause.
 * Column descriptions determine how each input row is projected to a result row.
 ```sql
-select [columns] from [table] where [condition] order by [order];
+select [columns] from [table] where [condition] order by [order] [DESC];
 select "west coast" as region, name from cities where longtitude >= 115 union
 select "other"               , name from cities where longtitude < 115;
 ```
