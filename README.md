@@ -23,6 +23,12 @@ python3 scheme -i f.scm
 * 其他
   * [Python3 库文档](https://docs.python.org/3/library/index.html)
   * [Online Python Tutor](https://pythontutor.com/cp/composingprograms.html#mode=edit)
-
+  * [在线网站编程python/scheme](https://code.cs61a.org/)
+  * [Install sqlite](http://sqlite.org/download.html)
+  * [Use sqlite online](https://sql.js.org/examples/GUI/index.html)
 * 未解决
   * disc03 Q6
+  * Project-scheme-可选问题1、可选问题2
+  * Project-scheme_contest(可选竞赛)
+  * Scheme相关的作业都不太会，有时间再做一遍
+  * disc12
