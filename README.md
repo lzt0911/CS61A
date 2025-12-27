@@ -28,4 +28,7 @@ python3 scheme -i f.scm
   * [Use sqlite online](https://sql.js.org/examples/GUI/index.html)
 * 未解决
   * disc03 Q6
-  * Project-Scheme-可选问题1、可选问题2
+  * Project-scheme-可选问题1、可选问题2
+  * Project-scheme_contest(可选竞赛)
+  * Scheme相关的作业都不太会，有时间再做一遍
+  * disc12
